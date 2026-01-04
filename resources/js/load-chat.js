@@ -42,6 +42,8 @@
                     currentUserId: window.currentUserId,
                     otherUserId: userId,
                     otherUserAvatar: avatar,
+                    roomKey: null,
+                    roomName: null,
                 };
                 chatAreaContainer.classList.remove('hidden');
 
@@ -103,6 +105,123 @@
                 // Initialize chat interactions to prevent page reload on send
                 initChatInteractions();
                 
+                // Initialize file upload functionality
+                try { window.initFileUpload(); } catch (_) {}
+            })
+            .catch(error => {
+                console.error('Error loading chat:', error);
+                // Show placeholder again on error
+                const phErr = document.getElementById('chat-placeholder');
+                if (phErr) {
+                    phErr.classList.remove('hidden');
+                    phErr.classList.add('flex');
+                }
+                const chatContent = chatAreaContainer.querySelector('#chat-content-wrapper');
+                if (chatContent) {
+                    chatContent.classList.add('hidden');
+                }
+            });
+    }
+
+    function loadChatForRoom(roomKey, roomName) {
+        const chatAreaContainer = document.getElementById('chat-area-container');
+        const userListSidebar = document.getElementById('user-list-sidebar');
+
+        // On mobile, hide user list and show chat area
+        if (window.innerWidth < 768) {
+            userListSidebar.classList.add('hidden');
+            chatAreaContainer.classList.remove('hidden');
+        }
+
+        // Hide placeholder immediately to avoid flash
+        const placeholder = document.getElementById('chat-placeholder');
+        if (placeholder) {
+            placeholder.classList.add('hidden');
+            placeholder.classList.remove('flex');
+        }
+
+        fetch(`/room/${roomKey}`)
+            .then(response => response.text())
+            .then(html => {
+                // Create a wrapper div for the chat content
+                let chatContent = chatAreaContainer.querySelector('#chat-content-wrapper');
+                if (!chatContent) {
+                    chatContent = document.createElement('div');
+                    chatContent.id = 'chat-content-wrapper';
+                    chatContent.className = 'flex-1 flex flex-col hidden';
+                    chatAreaContainer.appendChild(chatContent);
+                }
+
+                // Load chat area
+                chatContent.innerHTML = html;
+
+                window.chatConfig = {
+                    currentUserId: window.currentUserId,
+                    otherUserId: null,
+                    otherUserAvatar: null,
+                    roomKey: roomKey,
+                    roomName: roomName || 'Room',
+                };
+                chatAreaContainer.classList.remove('hidden');
+
+                // Add a back button for mobile
+                const chatHeader = chatContent.querySelector('.border-b');
+                if (chatHeader) {
+                    // Remove existing back button if any
+                    const existingBackButton = chatHeader.querySelector('.back-button-mobile');
+                    if (existingBackButton) {
+                        existingBackButton.remove();
+                    }
+
+                    const backButton = document.createElement('button');
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>`;
+                    backButton.className = 'back-button-mobile md:hidden mr-4';
+                    backButton.onclick = () => {
+                        userListSidebar.classList.remove('hidden');
+                        chatAreaContainer.classList.add('hidden');
+                        // Hide chat content and show placeholder again when going back
+                        if (chatContent) {
+                            chatContent.classList.add('hidden');
+                        }
+                        const ph2 = document.getElementById('chat-placeholder');
+                        if (ph2) {
+                            ph2.classList.remove('hidden');
+                            ph2.classList.add('flex');
+                        }
+                    };
+                    chatHeader.prepend(backButton);
+                }
+
+                // Show chat content
+                if (chatContent) {
+                    chatContent.classList.remove('hidden');
+                }
+
+                // Hide unread badge for this room in sidebar immediately
+                try {
+                    const roomButton = document.querySelector(`.room-button[data-room-key="${roomKey}"]`);
+                    if (roomButton) {
+                        const badge = roomButton.querySelector('.bg-blue-500.text-white.text-xs.font-semibold');
+                        if (badge) {
+                            badge.remove();
+                        }
+                    }
+                } catch (_) {}
+
+                // Scroll to bottom after loading messages
+                setTimeout(() => {
+                    const chatMessages = document.getElementById('chat-messages');
+                    if (chatMessages) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                }, 100);
+
+                // Initialize real-time receiving on the injected chat (after chatConfig is set)
+                try { window.initChatMessages(); } catch (_) {}
+
+                // Initialize chat interactions to prevent page reload on send
+                initChatInteractions();
+
                 // Initialize file upload functionality
                 try { window.initFileUpload(); } catch (_) {}
             })
@@ -259,6 +378,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const userButtons = document.querySelectorAll('.user-button');
         const userButtonsMobile = document.querySelectorAll('.user-button-mobile');
+        const roomButtons = document.querySelectorAll('.room-button');
+        const roomButtonsMobile = document.querySelectorAll('.room-button-mobile');
         const chatAreaContainer = document.getElementById('chat-area-container');
         const userListSidebar = document.getElementById('user-list-sidebar');
 
@@ -311,6 +432,22 @@
             button.addEventListener('click', function () {
                 const userId = this.dataset.userId;
                 loadChatForUser(userId);
+            });
+        });
+
+        roomButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const roomKey = this.dataset.roomKey;
+                const roomName = this.dataset.roomName;
+                loadChatForRoom(roomKey, roomName);
+            });
+        });
+
+        roomButtonsMobile.forEach(button => {
+            button.addEventListener('click', function () {
+                const roomKey = this.dataset.roomKey;
+                const roomName = this.dataset.roomName;
+                loadChatForRoom(roomKey, roomName);
             });
         });
 

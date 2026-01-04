@@ -1,5 +1,7 @@
+@props(['users', 'globalRoom' => null])
+
 <div id="user-list-sidebar"
-  class="w-full md:w-80 h-screen flex-col border-r border-gray-300 bg-[radial-gradient(circle_at_top_left,#f9fafb,#f3f4f6,#e5e7eb)] text-gray-900 md:flex dark:border-[var(--border)] dark:bg-[radial-gradient(circle_at_top_left,var(--bg-1),var(--bg-2),var(--bg-3))] dark:text-[var(--text)]">
+  class="w-full md:w-80 h-screen flex flex-col border-r border-gray-300 bg-[radial-gradient(circle_at_top_left,#f9fafb,#f3f4f6,#e5e7eb)] text-gray-900 md:flex dark:border-[var(--border)] dark:bg-[radial-gradient(circle_at_top_left,var(--bg-1),var(--bg-2),var(--bg-3))] dark:text-[var(--text)]">
   <!-- Mobile Header -->
   <div class="md:hidden p-4 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-transparent">
     <div class="flex justify-between items-center mb-4">
@@ -169,6 +171,32 @@
       </button>
     @endforeach
   </div>
+
+  @if (!empty($globalRoom))
+    <div class="px-4 py-3 border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-transparent mb-16 md:mb-0">
+      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Pinned</h4>
+      <button
+        class="w-full px-3 py-3 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition rounded-lg room-button"
+        data-room-key="{{ $globalRoom['key'] }}" data-room-name="{{ $globalRoom['name'] }}">
+        <div class="relative">
+          <div
+            class="w-10 h-10 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a4 4 0 0 0-4-4h-1m-4 6H2v-2a4 4 0 0 1 4-4h4m1-4a3 3 0 1 1-6 0 3 3 0 0 1 6 0m8 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+            </svg>
+          </div>
+        </div>
+        <div class="flex-1 text-left min-w-0">
+          <div class="flex items-center justify-between">
+            <h4 class="font-semibold text-sm truncate text-gray-800 dark:text-gray-100">{{ $globalRoom['name'] }}</h4>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">All users</p>
+        </div>
+      </button>
+    </div>
+  @endif
 
   <!-- Bottom Navigation -->
   <div

@@ -14,6 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/Chatly', [ChatlyController::class, 'index'])->name('Chatly');
     Route::get('/chat/{user}', [ChatlyController::class, 'chat'])->name('chat.show');
     Route::post('/message/{user}', [ChatlyController::class, 'store'])->name('message.store');
+    Route::get('/room/{roomKey}', [ChatlyController::class, 'room'])->name('room.show');
+    Route::post('/room/{roomKey}/message', [ChatlyController::class, 'storeRoom'])->name('room.message.store');
 });
 
 Route::middleware('auth')->group(function () {

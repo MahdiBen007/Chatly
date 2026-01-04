@@ -7,3 +7,7 @@ Broadcast::channel('chat.{userId}', function ($user, $userId) {
     return (string) $user->id === (string) $userId;
 });
 
+Broadcast::channel('room.{roomKey}', function ($user, $roomKey) {
+    return $roomKey === 'global';
+});
+

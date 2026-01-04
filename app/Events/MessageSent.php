@@ -31,6 +31,12 @@ class MessageSent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        if (!empty($this->message->room_key)) {
+            return [
+                new PrivateChannel('room.' . $this->message->room_key),
+            ];
+        }
+
         // Broadcast to private channels for both sender and receiver
         return [
             new PrivateChannel('chat.' . $this->message->sender_id),
@@ -51,10 +57,19 @@ class MessageSent implements ShouldBroadcastNow
      */
     public function broadcastWith(): array
     {
+        $sender = $this->message->sender;
+        $senderAvatar = null;
+        if ($sender && $sender->profile_image) {
+            $senderAvatar = \Illuminate\Support\Facades\Storage::url($sender->profile_image);
+        }
+
         return [
             'id' => $this->message->id,
             'sender_id' => $this->message->sender_id,
             'receiver_id' => $this->message->receiver_id,
+            'room_key' => $this->message->room_key,
+            'sender_name' => $sender?->name,
+            'sender_avatar' => $senderAvatar,
             'message' => $this->message->message,
             'file_path' => $this->message->file_path ? \Illuminate\Support\Facades\Storage::url($this->message->file_path) : null,
             'created_at' => $this->message->created_at->toDateTimeString(),

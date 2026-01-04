@@ -2,7 +2,8 @@ window.initChatMessages = function() {
     const chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) return;
 
-    const { currentUserId, otherUserId, otherUserAvatar } = window.chatConfig || {};
+    const { currentUserId, otherUserId, otherUserAvatar, roomKey } = window.chatConfig || {};
+    const isRoomChat = Boolean(roomKey);
     if (!currentUserId) return;
 
     const displayedMessageIds = getDisplayedMessageIds();
@@ -12,7 +13,7 @@ window.initChatMessages = function() {
     });
 
     if (window.Echo) {
-        const channelName = `chat.${currentUserId}`;
+        const channelName = isRoomChat ? `room.${roomKey}` : `chat.${currentUserId}`;
         if (window.currentChatChannel) {
             try { window.Echo.leave(window.currentChatChannel); } catch (_) {}
         }
@@ -20,7 +21,29 @@ window.initChatMessages = function() {
         window.currentChatChannel = channelName;
 
         channel.listen('.message.sent', (e) => {
-            if (!e || !e.id || !e.message) return;
+            if (!e || !e.id) return;
+
+            if (isRoomChat) {
+                if (e.room_key && e.room_key !== roomKey) return;
+
+                if (!displayedMessageIds.has(e.id.toString())) {
+                    const messageData = {
+                        id: e.id,
+                        sender_id: e.sender_id,
+                        receiver_id: e.receiver_id,
+                        room_key: e.room_key || null,
+                        sender_name: e.sender_name || null,
+                        sender_avatar: e.sender_avatar || null,
+                        message: e.message || '',
+                        file_path: e.file_path || null,
+                        created_at: e.created_at
+                    };
+
+                    const isOwnMessage = e.sender_id == currentUserId;
+                    addMessageToChat(messageData, isOwnMessage, true);
+                }
+                return;
+            }
 
             const isInConversation =
                 (e.receiver_id == currentUserId && e.sender_id == otherUserId) ||
@@ -31,18 +54,19 @@ window.initChatMessages = function() {
                     id: e.id,
                     sender_id: e.sender_id,
                     receiver_id: e.receiver_id,
+                    room_key: e.room_key || null,
                     message: e.message,
                     file_path: e.file_path || null,
                     created_at: e.created_at
                 };
 
                 const isOwnMessage = e.sender_id == currentUserId;
-                addMessageToChat(messageData, isOwnMessage);
+                addMessageToChat(messageData, isOwnMessage, false);
             }
         });
     }
 
-    function addMessageToChat(messageData, isOwnMessage) {
+    function addMessageToChat(messageData, isOwnMessage, isRoomMessage) {
         if (!messageData || !messageData.id) return;
         if (!messageData.message && !messageData.file_path) return;
         if (displayedMessageIds.has(messageData.id.toString())) return;
@@ -101,7 +125,24 @@ window.initChatMessages = function() {
             }
         }
 
-        if (isOwnMessage || messageData.sender_id == currentUserId) {
+        if (isRoomMessage && !isOwnMessage) {
+            const senderName = String(messageData.sender_name || 'User');
+            const fallbackAvatar = window.defaultAvatarUrl || '';
+            const senderAvatar = messageData.sender_avatar || fallbackAvatar || otherUserAvatar || '';
+
+            messageDiv.className = 'flex items-end gap-2';
+            messageDiv.innerHTML = `
+                <img src="${escapeHtml(senderAvatar)}" class="w-8 h-8 rounded-full object-cover" alt="avatar">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">${escapeHtml(senderName)}</p>
+                    <div class="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm max-w-xs">
+                        ${fileHtml}
+                        ${messageText ? `<p>${escapeHtml(messageText)}</p>` : ''}
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">${timeString}</span>
+                </div>
+            `;
+        } else if (isOwnMessage || messageData.sender_id == currentUserId) {
             messageDiv.className = 'flex items-end gap-2 justify-end';
             messageDiv.innerHTML = `
                 <div>

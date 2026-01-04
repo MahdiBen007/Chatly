@@ -10,6 +10,7 @@ class Message extends Model
     protected $fillable = [
         'sender_id',
         'receiver_id',
+        'room_key',
         'message',
         'file_path',
     ];
