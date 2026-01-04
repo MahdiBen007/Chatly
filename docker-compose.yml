@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mini-project-app
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      reverb:
+        condition: service_started
+    env_file:
+      - .env.docker
+    volumes:
+      - ./.env.docker:/var/www/html/.env:ro
+      - ./storage:/var/www/html/storage
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  reverb:
+    image: mini-project-app
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file:
+      - .env.docker
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080 --debug
+    volumes:
+      - ./storage:/var/www/html/storage
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11.3
+    environment:
+      MARIADB_DATABASE: mini_project
+      MARIADB_USER: app
+      MARIADB_PASSWORD: app
+      MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb -uroot -p$$MARIADB_ROOT_PASSWORD -h127.0.0.1 -e \"SELECT 1\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
+
+volumes:
+  db-data:
