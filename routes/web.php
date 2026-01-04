@@ -24,23 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/sql-test', function (Request $request) {
-    $email = $request->query('email');
-    $safe = DB::table('users')->where('email', $email)->first();
-    $unsafe = null;
-
-    try {
-        $unsafe = DB::select("SELECT * FROM users WHERE email = ?", [$email]);
-    } catch (\Exception $e) {
-        $unsafe = $e->getMessage();
-    }
-
-    return response()->json([
-        'email' => $email,
-        'safe_result' => $safe,
-        'unsafe_result' => $unsafe,
-    ]);
-});
 
 Route::view('/terms', 'terms')->name('terms.show');
 Route::view('/policy', 'policy')->name('policy.show');
