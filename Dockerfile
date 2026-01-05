@@ -8,7 +8,8 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-
 
 COPY . .
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
-    && composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+    && BROADCAST_CONNECTION=log REVERB_APP_KEY=build REVERB_APP_SECRET=build REVERB_APP_ID=build \
+        composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
 FROM node:20-alpine AS frontend
 WORKDIR /app
