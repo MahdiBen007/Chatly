@@ -30,7 +30,6 @@
 
     <!-- Friends list -->
     <div class="flex items-start gap-4 mt-4 overflow-x-auto pb-2 no-scrollbar">
-
       <!-- إضافة القصة -->
       <div class="flex flex-col items-center gap-1 flex-shrink-0">
         <div class="w-14 h-14 rounded-full border-2 border-blue-500 flex items-center justify-center bg-white">
