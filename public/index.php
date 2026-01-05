@@ -5,6 +5,15 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+$debug = filter_var(getenv('APP_DEBUG') ?: 'false', FILTER_VALIDATE_BOOLEAN);
+if ($debug) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    ini_set('log_errors', '1');
+    ini_set('error_log', 'php://stderr');
+    error_reporting(E_ALL);
+}
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
