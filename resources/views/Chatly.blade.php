@@ -15,7 +15,6 @@
         <div id="chat-area-container" class="flex-1 hidden md:flex flex-col w-full 
                    bg-gray-50 
                    dark:bg-transparent">
-            <!-- Placeholder عند عدم اختيار مستخدم -->
             <div id="chat-placeholder" class="flex-1 flex flex-col items-center justify-center text-center px-4">
                 <div class="inline-flex items-center justify-center w-20 h-20 
                            rounded-full bg-blue-100 mb-4 shadow-lg 

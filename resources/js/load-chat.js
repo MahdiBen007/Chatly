@@ -3,13 +3,11 @@
         const chatAreaContainer = document.getElementById('chat-area-container');
         const userListSidebar = document.getElementById('user-list-sidebar');
 
-        // On mobile, hide user list and show chat area
         if (window.innerWidth < 768) {
             userListSidebar.classList.add('hidden');
             chatAreaContainer.classList.remove('hidden');
         }
 
-        // Hide placeholder immediately to avoid flash
         const placeholder = document.getElementById('chat-placeholder');
         if (placeholder) {
             placeholder.classList.add('hidden');
@@ -19,9 +17,7 @@
         fetch(`/chat/${userId}`)
             .then(response => response.text())
             .then(html => {
-                // Placeholder already hidden above using Tailwind classes
                 
-                // Create a wrapper div for the chat content
                 let chatContent = chatAreaContainer.querySelector('#chat-content-wrapper');
                 if (!chatContent) {
                     chatContent = document.createElement('div');
@@ -30,10 +26,8 @@
                     chatAreaContainer.appendChild(chatContent);
                 }
                 
-                // Load chat area
                 chatContent.innerHTML = html;
                 
-                // Ensure chatConfig is set because injected <script> tags won't execute when using innerHTML
                 const avatar =
                     chatContent.querySelector('.border-b img')?.src ||
                     chatContent.querySelector('#chat-messages img')?.src ||
@@ -47,7 +41,6 @@
                 };
                 chatAreaContainer.classList.remove('hidden');
 
-                // Add a back button for mobile
                 const chatHeader = chatContent.querySelector('.border-b');
                 if (chatHeader) {
                     // Remove existing back button if any
@@ -62,7 +55,6 @@
                     backButton.onclick = () => {
                         userListSidebar.classList.remove('hidden');
                         chatAreaContainer.classList.add('hidden');
-                        // Hide chat content and show placeholder again when going back
                         if (chatContent) {
                             chatContent.classList.add('hidden');
                         }
@@ -75,12 +67,10 @@
                     chatHeader.prepend(backButton);
                 }
                 
-                // Show chat content
                 if (chatContent) {
                     chatContent.classList.remove('hidden');
                 }
 
-                // Hide unread badge for this user in sidebar immediately
                 try {
                     const userButton = document.querySelector(`.user-button[data-user-id="${userId}"]`);
                     if (userButton) {
@@ -91,7 +81,6 @@
                     }
                 } catch (_) {}
                 
-                // Scroll to bottom after loading messages
                 setTimeout(() => {
                     const chatMessages = document.getElementById('chat-messages');
                     if (chatMessages) {
@@ -99,18 +88,14 @@
                     }
                 }, 100);
 
-                // Initialize real-time receiving on the injected chat (after chatConfig is set)
                 try { window.initChatMessages(); } catch (_) {}
 
-                // Initialize chat interactions to prevent page reload on send
                 initChatInteractions();
                 
-                // Initialize file upload functionality
                 try { window.initFileUpload(); } catch (_) {}
             })
             .catch(error => {
                 console.error('Error loading chat:', error);
-                // Show placeholder again on error
                 const phErr = document.getElementById('chat-placeholder');
                 if (phErr) {
                     phErr.classList.remove('hidden');
@@ -127,13 +112,11 @@
         const chatAreaContainer = document.getElementById('chat-area-container');
         const userListSidebar = document.getElementById('user-list-sidebar');
 
-        // On mobile, hide user list and show chat area
         if (window.innerWidth < 768) {
             userListSidebar.classList.add('hidden');
             chatAreaContainer.classList.remove('hidden');
         }
 
-        // Hide placeholder immediately to avoid flash
         const placeholder = document.getElementById('chat-placeholder');
         if (placeholder) {
             placeholder.classList.add('hidden');
@@ -143,7 +126,6 @@
         fetch(`/room/${roomKey}`)
             .then(response => response.text())
             .then(html => {
-                // Create a wrapper div for the chat content
                 let chatContent = chatAreaContainer.querySelector('#chat-content-wrapper');
                 if (!chatContent) {
                     chatContent = document.createElement('div');
@@ -152,7 +134,6 @@
                     chatAreaContainer.appendChild(chatContent);
                 }
 
-                // Load chat area
                 chatContent.innerHTML = html;
 
                 window.chatConfig = {
@@ -164,10 +145,8 @@
                 };
                 chatAreaContainer.classList.remove('hidden');
 
-                // Add a back button for mobile
                 const chatHeader = chatContent.querySelector('.border-b');
                 if (chatHeader) {
-                    // Remove existing back button if any
                     const existingBackButton = chatHeader.querySelector('.back-button-mobile');
                     if (existingBackButton) {
                         existingBackButton.remove();

@@ -37,7 +37,6 @@ class ChatlyController extends Controller
 
         $filePath = null;
 
-        // Handle file upload if present
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $filePath = $file->store('message_files', 'public');
@@ -51,15 +50,12 @@ class ChatlyController extends Controller
         ]);
         $message->loadMissing('sender');
 
-        // Broadcast the message event
         broadcast(new MessageSent(message: $message))->toOthers();
 
-        // If this is not an AJAX request, redirect back to prevent raw JSON display
         if (! $request->ajax()) {
             return back();
         }
 
-        // Return only the necessary data for AJAX requests
         return response()->json([
             'success' => true,
             'message' => $this->messagePayload($message),
@@ -95,7 +91,6 @@ class ChatlyController extends Controller
 
         $filePath = null;
 
-        // Handle file upload if present
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $filePath = $file->store('message_files', 'public');
@@ -110,15 +105,12 @@ class ChatlyController extends Controller
         ]);
         $message->loadMissing('sender');
 
-        // Broadcast the message event
         broadcast(new MessageSent(message: $message))->toOthers();
 
-        // If this is not an AJAX request, redirect back to prevent raw JSON display
         if (! $request->ajax()) {
             return back();
         }
 
-        // Return only the necessary data for AJAX requests
         return response()->json([
             'success' => true,
             'message' => $this->messagePayload($message),
@@ -127,7 +119,6 @@ class ChatlyController extends Controller
 
     public function chat(User $user): View
     {
-        // Mark messages from this user to the authenticated user as read when opening chat
         Message::where('sender_id', $user->id)
             ->where('receiver_id', Auth::id())
             ->whereNull('read_at')
